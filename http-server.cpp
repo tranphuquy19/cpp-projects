@@ -9,7 +9,6 @@
 */
 
 #include <iostream>
-#include <sys/un.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
