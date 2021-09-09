@@ -104,6 +104,15 @@ void write_response(int sock, string response)
     write(sock, response.c_str(), response.length());
 }
 
+void redirect(string response, string url)
+{
+    response = "HTTP/1.1 301 Moved Permanently\r\n";
+    response += "Location: " + url + "\r\n";
+    response += "Content-Type: text/html\r\n";
+    response += "Content-Length: 0\r\n";
+    response += "\r\n";
+}
+
 // handle a GET request
 void handle_get(int sock, string request)
 {
