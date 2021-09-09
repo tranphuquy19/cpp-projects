@@ -12,6 +12,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <string>
+#include <fstream>
+#include <map>
 
 #define PORT 8080
 
@@ -24,6 +27,10 @@ string get_endpoint(string request);
 string get_host(string request);
 string get_http_version(string request);
 string get_user_agent(string request);
+
+string render_http_template(string strTemplate, std::string data[]);
+string render_http_template(string strTemplate, map<string, string> data);
+string read_text_file(string file_path);
 
 // create a socket and bind it to a port
 int create_socket(int port)
@@ -95,11 +102,17 @@ void write_response(int sock, string response)
 // handle a GET request
 void handle_get(int sock, string request)
 {
+    string html = read_text_file("index.html");
+    string htmlRendered = render_http_template(html, {
+        {"title", "Hello, World!"},
+        {"content", "This is a simple HTTP server."},
+    });
+
     string response = "HTTP/1.1 200 OK\r\n"
                       "Content-Type: text/html\r\n"
-                      "Content-Length: 12\r\n"
+                      "Content-Length: " + std::to_string(htmlRendered.length()) + "\r\n"
                       "\r\n"
-                      "Hello, world!";
+                      + htmlRendered;
 
     write_response(sock, response);
 }
@@ -197,6 +210,31 @@ string get_accept_encoding(string request)
     string accept_encoding = request.substr(request.find("Accept-Encoding: ") + 17);
     accept_encoding = accept_encoding.substr(0, accept_encoding.find("\r\n"));
     return accept_encoding;
+}
+
+string render_http_template(string strTemplate, std::string data[])
+{
+    string result = strTemplate;
+    for (int i = 0; i < data->length(); i++)
+    {
+        result = result.replace(result.find("{" + data[i] + "}"), data[i].length() + 2, data[i]);
+    }
+    return result;
+}
+
+string render_http_template(string strTemplate, map<string, string> data) {
+    string result = strTemplate;
+    for (auto it = data.begin(); it != data.end(); it++) {
+        result = result.replace(result.find("{" + it->first + "}"), it->first.length() + 2, it->second);
+    }
+    return result;
+}
+
+string read_text_file(string file_name)
+{
+    ifstream file(file_name);
+    string str((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    return str;
 }
 
 // main function
