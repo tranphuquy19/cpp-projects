@@ -103,15 +103,16 @@ void handle_get(int sock, string request)
 {
     string html = read_text_file("index.html");
     string htmlRendered = render_http_template(html, {
-        {"title", "Hello, World!"},
-        {"content", "This is a simple HTTP server."},
-    });
+                                                         {"title", "Hello, World!"},
+                                                         {"content", "This is a simple HTTP server."},
+                                                     });
 
     string response = "HTTP/1.1 200 OK\r\n"
                       "Content-Type: text/html\r\n"
-                      "Content-Length: " + std::to_string(htmlRendered.length()) + "\r\n"
-                      "\r\n"
-                      + htmlRendered;
+                      "Content-Length: " +
+                      std::to_string(htmlRendered.length()) + "\r\n"
+                                                              "\r\n" +
+                      htmlRendered;
 
     write_response(sock, response);
 }
@@ -156,7 +157,7 @@ void handle_request(int sock, string request)
 void handle_client(int sock)
 {
     string request = read_request(sock);
-    
+
     cout << "HOST: " << get_host(request) << endl;
     cout << "USER-AGENT: " << get_user_agent(request) << endl;
     cout << "ACCEPT: " << get_accept(request) << endl;
@@ -221,9 +222,11 @@ string render_http_template(string strTemplate, std::string data[])
     return result;
 }
 
-string render_http_template(string strTemplate, map<string, string> data) {
+string render_http_template(string strTemplate, map<string, string> data)
+{
     string result = strTemplate;
-    for (auto it = data.begin(); it != data.end(); it++) {
+    for (auto it = data.begin(); it != data.end(); it++)
+    {
         result = result.replace(result.find("{" + it->first + "}"), it->first.length() + 2, it->second);
     }
     return result;
@@ -244,9 +247,15 @@ int main(int argc, char *argv[])
     {
         port = atoi(argv[1]);
     }
+    else
+    {
+        cout << "Using default port: " << PORT << endl;
+    }
 
     int sock = create_socket(port);
     listen_socket(sock);
+
+    cout << "Listening on port " << port << endl;
 
     while (true)
     {
