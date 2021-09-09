@@ -20,7 +20,6 @@
 
 using namespace std;
 
-// return the endpoint of the request
 string get_accept(string request);
 string get_accept_encoding(string request);
 string get_endpoint(string request);
