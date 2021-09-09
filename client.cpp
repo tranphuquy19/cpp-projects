@@ -5,6 +5,7 @@
     version: 1.0
 
     Build command: gcc client.cpp -lstdc++ -lcurl -o client.out
+    Usage: ./client.out [url] [method] [data]
 */
 
 #include <iostream>
