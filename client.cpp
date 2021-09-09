@@ -12,7 +12,7 @@
 
 #define CLIENT_VERSION "1.0"
 #define CLIENT_NAME "christian"
-#define CURL_VERBOSE 0
+#define CURL_VERBOSE 0 // 1: enable, 0: disable
 
 using namespace std;
 
@@ -27,7 +27,7 @@ void send_json_post_request(string url, string json_data)
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_data.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, json_data.length());
         curl_easy_setopt(curl, CURLOPT_POST, 1);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, CURL_VERBOSE);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, "Content-Type: application/json"));
         curl_easy_setopt(curl, CURLOPT_USERAGENT, CLIENT_NAME "/" CLIENT_VERSION);
         res = curl_easy_perform(curl);
@@ -49,7 +49,7 @@ void send_json_get_request(string url)
     {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, CURL_VERBOSE);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, "Content-Type: application/json"));
         curl_easy_setopt(curl, CURLOPT_USERAGENT, CLIENT_NAME "/" CLIENT_VERSION);
         res = curl_easy_perform(curl);
@@ -73,7 +73,7 @@ void send_json_put_request(string url, string json_data)
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_data.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, json_data.length());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, CURL_VERBOSE);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, "Content-Type: application/json"));
         curl_easy_setopt(curl, CURLOPT_USERAGENT, CLIENT_NAME "/" CLIENT_VERSION);
         res = curl_easy_perform(curl);
@@ -97,7 +97,7 @@ void send_json_delete_request(string url, string json_data)
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_data.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, json_data.length());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, CURL_VERBOSE);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, "Content-Type: application/json"));
         curl_easy_setopt(curl, CURLOPT_USERAGENT, CLIENT_NAME "/" CLIENT_VERSION);
         res = curl_easy_perform(curl);
