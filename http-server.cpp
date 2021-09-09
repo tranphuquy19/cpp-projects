@@ -31,6 +31,12 @@ string render_http_template(string strTemplate, std::string data[]);
 string render_http_template(string strTemplate, map<string, string> data);
 string read_text_file(string file_path);
 
+string decode_uri_component(string uri);
+
+map<string, string> parse_request(string request);
+map<string, string> parse_body_post_request(string request);
+void print_body_request(map<string, string> data);
+
 // create a socket and bind it to a port
 int create_socket(int port)
 {
@@ -103,9 +109,10 @@ void handle_get(int sock, string request)
 {
     string html = read_text_file("index.html");
     string htmlRendered = render_http_template(html, {
-                                                         {"title", "Hello, World!"},
-                                                         {"content", "This is a simple HTTP server."},
-                                                     });
+            {"title", "Hello, World!"},
+            {"header", "Hello, World!"},
+            {"content", "This is a simple HTTP server."},
+        });
 
     string response = "HTTP/1.1 200 OK\r\n"
                       "Content-Type: text/html\r\n"
@@ -120,11 +127,18 @@ void handle_get(int sock, string request)
 // handle a POST request
 void handle_post(int sock, string request)
 {
+    map<string, string> data = parse_body_post_request(request);
+    // print_body_request(data);
+    data["header"] = "Hello, World!";
+    string html = read_text_file("profile.html");
+    string htmlRendered = render_http_template(html, data);
+
     string response = "HTTP/1.1 200 OK\r\n"
                       "Content-Type: text/html\r\n"
-                      "Content-Length: 12\r\n"
-                      "\r\n"
-                      "Hello, world!";
+                      "Content-Length: " +
+                      std::to_string(htmlRendered.length()) + "\r\n"
+                                                              "\r\n" +
+                      htmlRendered;
 
     write_response(sock, response);
 }
@@ -237,6 +251,76 @@ string read_text_file(string file_name)
     ifstream file(file_name);
     string str((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
     return str;
+}
+
+map<string, string> parse_request(string request)
+{
+    map<string, string> data;
+    string key = "";
+    string value = "";
+    bool is_key = true;
+    for (int i = 0; i < request.length(); i++)
+    {
+        if (request[i] == '=')
+        {
+            is_key = false;
+        }
+        else if (request[i] == '&')
+        {
+            data[key] = value;
+            key = "";
+            value = "";
+            is_key = true;
+        }
+        else
+        {
+            if (is_key)
+            {
+                key += request[i];
+            }
+            else
+            {
+                value += request[i];
+            }
+        }
+    }
+    data[key] = value;
+    return data;
+}
+
+map<string, string> parse_body_post_request(string request)
+{
+    string body = request.substr(request.find("\r\n\r\n") + 4);
+    body = decode_uri_component(body);
+    return parse_request(body);
+}
+
+string decode_uri_component(string uri)
+{
+    string result = "";
+    for (int i = 0; i < uri.length(); i++)
+    {
+        if (uri[i] == '%')
+        {
+            string hex = uri.substr(i + 1, 2);
+            int value = std::stoi(hex, nullptr, 16);
+            result += char(value);
+            i += 2;
+        }
+        else
+        {
+            result += uri[i];
+        }
+    }
+    return result;
+}
+
+void print_body_request(map<string, string> data)
+{
+    for (auto it = data.begin(); it != data.end(); it++)
+    {
+        cout << it->first << ": " << decode_uri_component(it->second) << endl;
+    }
 }
 
 // main function
