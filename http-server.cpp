@@ -266,7 +266,7 @@ string render_http_template(string strTemplate, string data[])
     string result = strTemplate;
     for (int i = 0; i < data->length(); i++)
     {
-        result = result.replace(result.find("{" + data[i] + "}"), data[i].length() + 2, data[i]);
+        result = result.replace(result.find("{{" + data[i] + "}}"), data[i].length() + 4, data[i]);
     }
     return result;
 }
@@ -276,7 +276,7 @@ string render_http_template(string strTemplate, map<string, string> data)
     string result = strTemplate;
     for (auto it = data.begin(); it != data.end(); it++)
     {
-        result = result.replace(result.find("{" + it->first + "}"), it->first.length() + 2, it->second);
+        result = result.replace(result.find("{{" + it->first + "}}"), it->first.length() + 4, it->second);
     }
     return result;
 }
