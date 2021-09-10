@@ -160,45 +160,45 @@ void handle_get(int sock, string request)
 // handle a POST request
 void handle_post(int sock, string request)
 {
-    cout << "REQUEST" << request << endl;
     string endpoint = get_endpoint(request);
     if (endpoint == "/calculator")
     {
-        map<string, string> data = parse_body_post_request(request);
-        string expression = data.find("expression")->second;
-        expression = decode_uri_component(expression);
-        cout << "expression: " << expression << endl;
-        float result = 0.0;
+        // map<string, string> data = parse_body_post_request(request);
+        // string expression = data.find("expression")->second;
+        // expression = decode_uri_component(expression);
+        // cout << "expression: " << expression << endl;
+        // float result = 0.0;
 
-        // convert expression string to vector<string>
-        vector<string> expression_vector = {};
-        string temp = "";
-        for (int i = 0; i < expression.length(); i++)
-        {
-            if (expression[i] == ' ')
-            {
-                expression_vector.push_back(temp);
-                temp = "";
-            }
-            else
-            {
-                temp += expression[i];
-            }
-        }
-        expression_vector.push_back(temp);
+        // // convert expression string to vector<string>
+        // vector<string> expression_vector = {};
+        // string temp = "";
+        // for (int i = 0; i < expression.length(); i++)
+        // {
+        //     if (expression[i] == ' ')
+        //     {
+        //         expression_vector.push_back(temp);
+        //         temp = "";
+        //     }
+        //     else
+        //     {
+        //         temp += expression[i];
+        //     }
+        // }
+        // expression_vector.push_back(temp);
 
 
-        result = evaluate_expression(expression_vector);
-        string resultStr = to_string(result);
+        // result = evaluate_expression(expression_vector);
+        // string resultStr = to_string(result);
 
-        cout << "result: " << resultStr << endl;
+        // cout << "result: " << resultStr << endl;
+        string resultStr = "chức năng đang test";
 
         string html = read_text_file("index.html");
         string htmlRendered = render_http_template(html, {
                                                              {"title", "Hello, World!"},
                                                              {"header", "Hello, World!"},
                                                              {"content", "This is a simple HTTP server."},
-                                                             {"result", "<p>" + resultStr + "</p>"},
+                                                             {"result", "<p> Kết quả: " + resultStr + "</p>"},
                                                          });
 
         string response = "HTTP/1.1 200 OK\r\n"
