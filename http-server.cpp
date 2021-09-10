@@ -30,6 +30,7 @@ string get_user_agent(string request);
 string render_http_template(string strTemplate, std::string data[]);
 string render_http_template(string strTemplate, map<string, string> data);
 string read_text_file(string file_path);
+string read_file(string file_path);
 
 string decode_uri_component(string uri);
 
@@ -116,21 +117,38 @@ void redirect(string response, string url)
 // handle a GET request
 void handle_get(int sock, string request)
 {
-    string html = read_text_file("index.html");
-    string htmlRendered = render_http_template(html, {
-            {"title", "Hello, World!"},
-            {"header", "Hello, World!"},
-            {"content", "This is a simple HTTP server."},
-        });
+    string endpoint = get_endpoint(request);
+    if (endpoint == "/favicon.ico")
+    {
+        string content = read_file("favicon.ico");
 
-    string response = "HTTP/1.1 200 OK\r\n"
-                      "Content-Type: text/html\r\n"
-                      "Content-Length: " +
-                      std::to_string(htmlRendered.length()) + "\r\n"
-                                                              "\r\n" +
-                      htmlRendered;
+        string response = "HTTP/1.1 200 OK\r\n"
+                          "Content-Type: image/x-icon\r\n"
+                          "Content-Length: " +
+                          to_string(content.length()) + "\r\n"
+                                                        "\r\n" +
+                          content;
 
-    write_response(sock, response);
+        write_response(sock, response);
+    }
+    else
+    {
+        string html = read_text_file("index.html");
+        string htmlRendered = render_http_template(html, {
+                                                             {"title", "Hello, World!"},
+                                                             {"header", "Hello, World!"},
+                                                             {"content", "This is a simple HTTP server."},
+                                                         });
+
+        string response = "HTTP/1.1 200 OK\r\n"
+                          "Content-Type: text/html\r\n"
+                          "Content-Length: " +
+                          to_string(htmlRendered.length()) + "\r\n"
+                                                             "\r\n" +
+                          htmlRendered;
+
+        write_response(sock, response);
+    }
 }
 
 // handle a POST request
@@ -150,6 +168,14 @@ void handle_post(int sock, string request)
                       htmlRendered;
 
     write_response(sock, response);
+}
+
+// return a file from the filesystem
+string read_file(string file_path)
+{
+    ifstream file(file_path);
+    string file_content((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    return file_content;
 }
 
 // handle a request
@@ -235,7 +261,7 @@ string get_accept_encoding(string request)
     return accept_encoding;
 }
 
-string render_http_template(string strTemplate, std::string data[])
+string render_http_template(string strTemplate, string data[])
 {
     string result = strTemplate;
     for (int i = 0; i < data->length(); i++)
