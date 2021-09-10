@@ -15,6 +15,9 @@
 #include <string>
 #include <fstream>
 #include <map>
+#include <math.h>
+#include <stack>
+#include <vector>
 
 #define PORT 8080
 
@@ -37,6 +40,8 @@ string decode_uri_component(string uri);
 map<string, string> parse_request(string request);
 map<string, string> parse_body_post_request(string request);
 void print_body_request(map<string, string> data);
+
+int evaluate_expression(vector<string> expression);
 
 // create a socket and bind it to a port
 int create_socket(int port)
@@ -138,6 +143,7 @@ void handle_get(int sock, string request)
                                                              {"title", "Hello, World!"},
                                                              {"header", "Hello, World!"},
                                                              {"content", "This is a simple HTTP server."},
+                                                             {"result", ""},
                                                          });
 
         string response = "HTTP/1.1 200 OK\r\n"
@@ -154,20 +160,73 @@ void handle_get(int sock, string request)
 // handle a POST request
 void handle_post(int sock, string request)
 {
-    map<string, string> data = parse_body_post_request(request);
-    // print_body_request(data);
-    data["header"] = "Hello, World!";
-    string html = read_text_file("profile.html");
-    string htmlRendered = render_http_template(html, data);
+    cout << "REQUEST" << request << endl;
+    string endpoint = get_endpoint(request);
+    if (endpoint == "/calculator")
+    {
+        map<string, string> data = parse_body_post_request(request);
+        string expression = data.find("expression")->second;
+        expression = decode_uri_component(expression);
+        cout << "expression: " << expression << endl;
+        float result = 0.0;
 
-    string response = "HTTP/1.1 200 OK\r\n"
-                      "Content-Type: text/html\r\n"
-                      "Content-Length: " +
-                      std::to_string(htmlRendered.length()) + "\r\n"
-                                                              "\r\n" +
-                      htmlRendered;
+        // convert expression string to vector<string>
+        vector<string> expression_vector = {};
+        string temp = "";
+        for (int i = 0; i < expression.length(); i++)
+        {
+            if (expression[i] == ' ')
+            {
+                expression_vector.push_back(temp);
+                temp = "";
+            }
+            else
+            {
+                temp += expression[i];
+            }
+        }
+        expression_vector.push_back(temp);
 
-    write_response(sock, response);
+
+        result = evaluate_expression(expression_vector);
+        string resultStr = to_string(result);
+
+        cout << "result: " << resultStr << endl;
+
+        string html = read_text_file("index.html");
+        string htmlRendered = render_http_template(html, {
+                                                             {"title", "Hello, World!"},
+                                                             {"header", "Hello, World!"},
+                                                             {"content", "This is a simple HTTP server."},
+                                                             {"result", "<p>" + resultStr + "</p>"},
+                                                         });
+
+        string response = "HTTP/1.1 200 OK\r\n"
+                          "Content-Type: text/html\r\n"
+                          "Content-Length: " +
+                          to_string(htmlRendered.length()) + "\r\n"
+                                                             "\r\n" +
+                          htmlRendered;
+
+        write_response(sock, response);
+    }
+    else
+    {
+        map<string, string> data = parse_body_post_request(request);
+        // print_body_request(data);
+        data["header"] = "Hello, World!";
+        string html = read_text_file("profile.html");
+        string htmlRendered = render_http_template(html, data);
+
+        string response = "HTTP/1.1 200 OK\r\n"
+                          "Content-Type: text/html\r\n"
+                          "Content-Length: " +
+                          to_string(htmlRendered.length()) + "\r\n"
+                                                             "\r\n" +
+                          htmlRendered;
+
+        write_response(sock, response);
+    }
 }
 
 // return a file from the filesystem
@@ -356,6 +415,52 @@ void print_body_request(map<string, string> data)
     {
         cout << it->first << ": " << decode_uri_component(it->second) << endl;
     }
+}
+
+// evaluate an expression using reverse polish notation
+int evaluate_expression(vector<string> expression)
+{
+    stack<int> stack;
+    for (int i = 0; i < expression.size(); i++)
+    {
+        if (expression[i] == "+")
+        {
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(a + b);
+        }
+        else if (expression[i] == "-")
+        {
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b - a);
+        }
+        else if (expression[i] == "*")
+        {
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(a * b);
+        }
+        else if (expression[i] == "/")
+        {
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b / a);
+        }
+        else
+        {
+            stack.push(stoi(expression[i]));
+        }
+    }
+    return stack.top();
 }
 
 // main function

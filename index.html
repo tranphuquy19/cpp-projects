@@ -14,20 +14,35 @@
         <h1>{{title}}</h1>
         <p class="">{{content}}</p>
   
-        <form method="POST" action="/profile">
-          <div class="form-group">
-            <label for="exampleInputEmail1">Email address</label>
-            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
-            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+        <div class="row">
+          <!-- login form -->
+          <div class="col-md-8 col-sm-12">
+            <form method="POST" action="/profile">
+              <div class="form-group">
+                <label for="exampleInputEmail1">Email address</label>
+                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
+                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+              </div>
+              <div class="form-group">
+                <label for="exampleInputPassword1">Password</label>
+                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
           </div>
-          <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
-          </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+
+          <!-- caculator form -->
+          <div class="col-md-4 col-sm-12">
+            <form method="POST" action="/calculator">
+              <div class="form-group">
+                <label for="txtExpression">Your expression</label>
+                <input type="text" class="form-control" id="txtExpression" aria-describedby="expressionHelp" placeholder="1+2" name="expression">
+                <small id="expressionHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+              </div>
+              <button type="submit" class="btn btn-primary">Calculate</button>
+              {{result}}
+        </div>
       </div>
-      
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
