@@ -41,7 +41,9 @@ map<string, string> parse_request(string request);
 map<string, string> parse_body_post_request(string request);
 void print_body_request(map<string, string> data);
 
-int evaluate_expression(vector<string> expression);
+string infix_to_postfix(string infix);
+int evaluate_rpn(vector<string> expression);
+vector<string> convert_to_vector_string(string str);
 
 // create a socket and bind it to a port
 int create_socket(int port)
@@ -163,35 +165,15 @@ void handle_post(int sock, string request)
     string endpoint = get_endpoint(request);
     if (endpoint == "/calculator")
     {
-        // map<string, string> data = parse_body_post_request(request);
-        // string expression = data.find("expression")->second;
-        // expression = decode_uri_component(expression);
-        // cout << "expression: " << expression << endl;
-        // float result = 0.0;
+        map<string, string> data = parse_body_post_request(request);
+        string expression = data["expression"];
+        expression = decode_uri_component(expression);
+        cout << "expression: " << expression << endl;
 
-        // // convert expression string to vector<string>
-        // vector<string> expression_vector = {};
-        // string temp = "";
-        // for (int i = 0; i < expression.length(); i++)
-        // {
-        //     if (expression[i] == ' ')
-        //     {
-        //         expression_vector.push_back(temp);
-        //         temp = "";
-        //     }
-        //     else
-        //     {
-        //         temp += expression[i];
-        //     }
-        // }
-        // expression_vector.push_back(temp);
+        vector<string> postfixTokens = infix_to_postfix(expression);
 
-
-        // result = evaluate_expression(expression_vector);
-        // string resultStr = to_string(result);
-
-        // cout << "result: " << resultStr << endl;
-        string resultStr = "chức năng đang test";
+        int result = evaluate_rpn(postfixTokens);
+        string resultStr = to_string(result);
 
         string html = read_text_file("index.html");
         string htmlRendered = render_http_template(html, {
@@ -417,8 +399,106 @@ void print_body_request(map<string, string> data)
     }
 }
 
-// evaluate an expression using reverse polish notation
-int evaluate_expression(vector<string> expression)
+bool is_operator(char x)
+{
+    return (x == '+' || x == '-' || x == '/' || x == '*');
+}
+bool is_left_parenthesis(char x)
+{
+    return (x == '(');
+}
+bool is_right_parenthesis(char x)
+{
+    return (x == ')');
+}
+int precedence(char a)
+{
+    if (a == '+' || a == '-')
+    {
+        return 1;
+    }
+    else if (a == '*' || a == '/')
+    {
+        return 2;
+    }
+    else if (a == '^')
+    {
+        return 3;
+    }
+    return -1;
+}
+
+// convert infix to postfix expression
+vector<string> infix_to_postfix(string infix)
+{
+    vector<string> postfix;
+    stack<char> operator_stack;
+    for (int i = 0; i < infix.length(); i++)
+    {
+        if (is_operator(infix[i]))
+        {
+            while (!operator_stack.empty() && precedence(operator_stack.top()) >= precedence(infix[i]))
+            {
+                postfix.push_back(operator_stack.top());
+                operator_stack.pop();
+            }
+            operator_stack.push(infix[i]);
+        }
+        else if (is_left_parenthesis(infix[i]))
+        {
+            operator_stack.push(infix[i]);
+        }
+        else if (is_right_parenthesis(infix[i]))
+        {
+            while (!operator_stack.empty() && !is_left_parenthesis(operator_stack.top()))
+            {
+                postfix.push_back(operator_stack.top());
+                operator_stack.pop();
+            }
+            operator_stack.pop();
+        }
+        else
+        {
+            postfix.push_back(infix[i]);
+        }
+    }
+    while (!operator_stack.empty())
+    {
+        postfix.push_back(operator_stack.top());
+        operator_stack.pop();
+    }
+    return postfix;
+}
+
+// convert string to vector<string>
+vector<string> convert_to_vector_string(string str)
+{
+    vector<string> result;
+    string token = "";
+    for (int i = 0; i < str.length(); i++)
+    {
+        if (str[i] == ' ')
+        {
+            if (token != "")
+            {
+                result.push_back(token);
+                token = "";
+            }
+        }
+        else
+        {
+            token += str[i];
+        }
+    }
+    if (token != "")
+    {
+        result.push_back(token);
+    }
+    return result;
+}
+
+// evaluate an rpn using reverse polish notation
+int evaluate_rpn(vector<string> expression)
 {
     stack<int> stack;
     for (int i = 0; i < expression.size(); i++)
