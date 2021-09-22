@@ -3,6 +3,7 @@
 
 using namespace std;
 
+// Build command: gcc vector_utils.cpp -lstdc++ -lm -o vector_utils.out
 // #############################################################################
 double euclidean_norm(double *v, int n) {
     double norm = 0;
